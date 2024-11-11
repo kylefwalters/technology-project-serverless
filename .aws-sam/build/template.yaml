@@ -3,6 +3,29 @@ Description: harmony-hub
 Transform:
 - AWS::Serverless-2016-10-31
 Resources:
+  registerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/register.registerHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Registers new user using Cognito pool
+      Environment:
+        Variables:
+          COGNITO_CLIENTID:
+            Ref: CognitoClientId
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /
+            Method: POST
+      CodeUri: registerFunction
+    Metadata:
+      SamResourceId: registerFunction
   getAllItemsFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -83,10 +106,29 @@ Resources:
           Type: Api
           Properties:
             Path: /
-            Method: POST
+            Method: POST\
       CodeUri: putItemFunction
     Metadata:
       SamResourceId: putItemFunction
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      UsernameConfiguration:
+        CaseSensitive: true
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId:
+        Ref: CognitoUserPool
+      ExplicitAuthFlows:
+      - ALLOW_REFRESH_TOKEN_AUTH
+      - ALLOW_USER_PASSWORD_AUTH
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:
@@ -106,6 +148,10 @@ Parameters:
       do not change unless you know what you are doing
     Type: String
     Default: Technology_Project
+  CognitoClientId:
+    Description: The Client ID for the Cognito application
+    Type: String
+    Default: 3fic1mggrt7sm16o0bs5a5jlkp
 Outputs:
   WebEndpoint:
     Description: API Gateway endpoint URL for Prod stage
