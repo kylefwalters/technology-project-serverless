@@ -1,4 +1,4 @@
 {
     "httpMethod": "POST",
-    "body": "{\"username\": \"localInvokeUser\",\"name\": \"Password1!\"}"
+    "body": "{\"username\": \"localInvokeUser\",\"password\": \"Password1!\"}"
 }
