@@ -24,12 +24,17 @@ export const registerHandler = async (event) => {
         var data = await cognitoClient.send(command);
     } catch (err) {
         console.log("Error", err);
+        return {
+            statusCode: 400,
+            body: JSON.stringify({
+                error: err.name
+            })
+        };
     }
 
     const response = {
         statusCode: 200,
-        body: JSON.stringify(
-            {
+        body: JSON.stringify({
                 data: data,
                 username: username,
                 password: password

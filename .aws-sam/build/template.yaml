@@ -110,6 +110,19 @@ Resources:
       CodeUri: putItemFunction
     Metadata:
       SamResourceId: putItemFunction
+  confirmUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/confirm-user.confirmUserHandler
+      Runtime: nodejs18.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Pre sign-up trigger for Cognito
+      CodeUri: confirmUserFunction
+    Metadata:
+      SamResourceId: confirmUserFunction
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -121,6 +134,11 @@ Resources:
           RequireSymbols: true
       UsernameConfiguration:
         CaseSensitive: true
+      LambdaConfig:
+        PreSignUp:
+          Fn::GetAtt:
+          - confirmUserFunction
+          - Arn
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
@@ -129,6 +147,19 @@ Resources:
       ExplicitAuthFlows:
       - ALLOW_REFRESH_TOKEN_AUTH
       - ALLOW_USER_PASSWORD_AUTH
+  OnCognitoSignupPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+        - confirmUserFunction
+        - Arn
+      Principal: cognito-idp.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
   ApplicationResourceGroup:
     Type: AWS::ResourceGroups::Group
     Properties:
